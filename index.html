@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>💌 A Little Something for You</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rose:    #f4a0b5;
+    --blush:   #fcd5e0;
+    --lavender:#d9b8f5;
+    --sky:     #b8daf5;
+    --cream:   #fff5f8;
+    --deep:    #7a3e60;
+    --text:    #5a2d4c;
+    --muted:   #a07090;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    overflow: hidden;
+  }
+
+  /* ── Background canvas ── */
+  #bg-canvas {
+    position: fixed; inset: 0; z-index: 0;
+    background: linear-gradient(135deg, #fde8f0 0%, #f0e6fd 40%, #e6f3fd 100%);
+  }
+
+  /* ── Floating hearts layer ── */
+  #hearts-layer {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
+  }
+  .fheart {
+    position: absolute;
+    bottom: -60px;
+    font-size: 1.4rem;
+    animation: floatUp linear infinite;
+    opacity: 0;
+    user-select: none;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0)   rotate(0deg);   opacity: 0; }
+    10%  {                                             opacity: .7; }
+    90%  {                                             opacity: .4; }
+    100% { transform: translateY(-110vh) rotate(25deg); opacity: 0; }
+  }
+
+  /* ── Sparkle layer ── */
+  #sparkle-layer {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  }
+  .spark {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, var(--rose) 60%, transparent 100%);
+    animation: sparkPulse ease-in-out infinite;
+    opacity: 0;
+  }
+  @keyframes sparkPulse {
+    0%, 100% { transform: scale(0); opacity: 0; }
+    50%       { transform: scale(1); opacity: .9; }
+  }
+
+  /* ── Main wrapper ── */
+  #app {
+    position: relative; z-index: 10;
+    height: 100dvh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(18px);
+    border: 1.5px solid rgba(244,160,181,.35);
+    border-radius: 2.5rem;
+    padding: clamp(2rem, 6vw, 3.5rem) clamp(1.5rem, 5vw, 3rem);
+    max-width: 480px; width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 40px rgba(122,62,96,.12), 0 2px 8px rgba(122,62,96,.06);
+  }
+
+  /* ── Screens ── */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    animation: fadeSlideIn .5s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeSlideOut {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-28px); }
+  }
+
+  /* ── Typography ── */
+  .screen-icon { font-size: clamp(2.5rem, 8vw, 3.5rem); line-height: 1; }
+
+  .screen-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.15rem, 3.5vw, 1.45rem);
+    color: var(--text);
+    line-height: 1.65;
+    letter-spacing: .01em;
+  }
+
+  .msg-text {
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(.95rem, 2.8vw, 1.1rem);
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.6;
+    padding: .75rem 1rem;
+    background: rgba(244,160,181,.12);
+    border-radius: 1.25rem;
+    border: 1px dashed rgba(244,160,181,.5);
+  }
+
+  /* ── Buttons ── */
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .35em;
+    padding: .85rem 1.6rem;
+    border: none; border-radius: 9999px;
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(.95rem, 2.5vw, 1.05rem);
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .18s, box-shadow .18s, filter .18s;
+    position: relative; overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0);
+    border-radius: inherit;
+    transition: background .15s;
+  }
+  .btn:hover::after { background: rgba(255,255,255,.15); }
+  .btn:active { transform: scale(.95) !important; }
+
+  .btn-yes {
+    background: linear-gradient(135deg, var(--rose) 0%, #e87fa8 100%);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(244,100,160,.35);
+  }
+  .btn-yes:hover { transform: translateY(-3px); box-shadow: 0 8px 26px rgba(244,100,160,.45); }
+
+  .btn-no {
+    background: rgba(255,255,255,.7);
+    color: var(--muted);
+    border: 1.5px solid rgba(217,184,245,.6);
+    box-shadow: 0 2px 10px rgba(180,140,200,.12);
+  }
+  .btn-no:hover { transform: translateY(-2px); box-shadow: 0 5px 16px rgba(180,140,200,.22); }
+
+  .btn-big {
+    background: linear-gradient(135deg, #f4a0b5 0%, #c87fe8 100%);
+    color: #fff;
+    box-shadow: 0 4px 22px rgba(200,100,220,.4);
+    font-size: clamp(1rem, 2.8vw, 1.15rem);
+  }
+  .btn-big:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 10px 30px rgba(200,100,220,.5); }
+
+  /* ── Divider ── */
+  .divider {
+    width: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--rose), transparent);
+    border-radius: 2px;
+  }
+
+  /* ── Confetti ── */
+  .confetti-piece {
+    position: fixed;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    top: -20px;
+    animation: confettiFall linear forwards;
+    z-index: 999;
+    pointer-events: none;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(0) rotate(0deg);     opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── Screen 4 special ── */
+  #screen4 .screen-text { font-size: clamp(1.2rem, 3.8vw, 1.55rem); }
+</style>
+</head>
+<body>
+
+<div id="bg-canvas"></div>
+<div id="hearts-layer"></div>
+<div id="sparkle-layer"></div>
+
+<div id="app">
+  <div class="card">
+
+    <!-- Screen 1 -->
+    <div class="screen active" id="screen1">
+      <div class="screen-icon">🌸</div>
+      <p class="screen-text">Hey... you're Ovi, right?</p>
+      <div class="divider"></div>
+      <div class="btn-group">
+        <button class="btn btn-yes" onclick="goTo(2)">Yes 💫</button>
+        <button class="btn btn-no"  onclick="showMsg(1,'Oops! Wrong person. This was meant for Ovi, not you! 😅')">No</button>
+      </div>
+      <div id="msg1" class="msg-text" style="display:none"></div>
+    </div>
+
+    <!-- Screen 2 -->
+    <div class="screen" id="screen2">
+      <div class="screen-icon">💌</div>
+      <p class="screen-text">I've always wanted to tell you something...</p>
+      <div class="divider"></div>
+      <div class="btn-group">
+        <button class="btn btn-yes" onclick="goTo(3)">Tell me!! ❤️</button>
+        <button class="btn btn-no"  onclick="showMsg(2,'Oh... okay, that\'s fine. Pass the phone to the owner 🥺')">Uhh... I don't wanna listen 😭</button>
+      </div>
+      <div id="msg2" class="msg-text" style="display:none"></div>
+    </div>
+
+    <!-- Screen 3 -->
+    <div class="screen" id="screen3">
+      <div class="screen-icon">✨</div>
+      <p class="screen-text">Through the stars and planets, they somehow brought me here to you. When the stars align, you shine even brighter. ✨</p>
+      <div class="divider"></div>
+      <div class="btn-group">
+        <button class="btn btn-yes" onclick="goTo(4)">Okay...</button>
+        <button class="btn btn-no"  onclick="showMsg(3,'Okay, fine... pass the phone to the owner 🥺')">And? 👀</button>
+      </div>
+      <div id="msg3" class="msg-text" style="display:none"></div>
+    </div>
+
+    <!-- Screen 4 -->
+    <div class="screen" id="screen4">
+      <div class="screen-icon">❤️</div>
+      <p class="screen-text">The truth is... I really, really love you. ❤️<br>Would you be my girlfriend?</p>
+      <div class="divider"></div>
+      <div class="btn-group">
+        <button class="btn btn-big" onclick="sayYes()">Yess!! 💖</button>
+        <button class="btn btn-no"  onclick="showMsg(4,'Okay... I guess my words weren\'t enough. 💔')">No</button>
+      </div>
+      <div id="msg4" class="msg-text" style="display:none"></div>
+    </div>
+
+    <!-- Screen 5 — Final yes -->
+    <div class="screen" id="screen5">
+      <div class="screen-icon">🎉</div>
+      <p class="screen-text" style="font-size:clamp(1.3rem,4vw,1.7rem)">Yippee!! 🎉❤️<br>You're my girlfriend now!</p>
+      <div class="divider"></div>
+      <p class="msg-text">I promise to make every moment with you magical. 💕</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── Floating hearts ── */
+(function() {
+  const layer = document.getElementById('hearts-layer');
+  const symbols = ['❤️','💕','💖','💗','💓','🌸','✨','💝','💞','🌷'];
+  for (let i = 0; i < 22; i++) {
+    const h = document.createElement('span');
+    h.className = 'fheart';
+    h.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.fontSize = (.8 + Math.random() * 1.2) + 'rem';
+    const dur = 8 + Math.random() * 12;
+    h.style.animationDuration = dur + 's';
+    h.style.animationDelay   = -(Math.random() * dur) + 's';
+    layer.appendChild(h);
+  }
+})();
+
+/* ── Sparkles ── */
+(function() {
+  const layer = document.getElementById('sparkle-layer');
+  for (let i = 0; i < 30; i++) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.top  = Math.random() * 100 + 'vh';
+    const dur = 2 + Math.random() * 3;
+    s.style.animationDuration = dur + 's';
+    s.style.animationDelay   = -(Math.random() * dur) + 's';
+    layer.appendChild(s);
+  }
+})();
+
+/* ── Screen transitions ── */
+function goTo(n) {
+  const current = document.querySelector('.screen.active');
+  if (!current) return;
+  current.style.animation = 'fadeSlideOut .35s ease forwards';
+  setTimeout(() => {
+    current.classList.remove('active');
+    current.style.animation = '';
+    const next = document.getElementById('screen' + n);
+    next.classList.add('active');
+  }, 330);
+}
+
+function showMsg(screenNum, text) {
+  const el = document.getElementById('msg' + screenNum);
+  el.textContent = text;
+  el.style.display = 'block';
+  el.style.animation = 'fadeSlideIn .4s ease forwards';
+}
+
+/* ── Say Yes! + confetti ── */
+function sayYes() {
+  goTo(5);
+  setTimeout(launchConfetti, 400);
+}
+
+function launchConfetti() {
+  const colors = ['#f4a0b5','#d9b8f5','#b8daf5','#fcd5e0','#ffe4a0','#a8e6cf','#ff9eb5','#c8a8f5'];
+  const shapes = ['circle','square','leaf'];
+  for (let i = 0; i < 160; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      const shape = shapes[Math.floor(Math.random()*shapes.length)];
+      if (shape === 'circle')      c.style.borderRadius = '50%';
+      else if (shape === 'leaf')   c.style.borderRadius = '0 50% 50% 50%';
+      c.style.background    = colors[Math.floor(Math.random()*colors.length)];
+      c.style.left          = Math.random()*100 + 'vw';
+      c.style.width         = (6 + Math.random()*8)  + 'px';
+      c.style.height        = (6 + Math.random()*10) + 'px';
+      c.style.animationDuration = (2 + Math.random()*2.5) + 's';
+      c.style.animationDelay    = (Math.random()*.8) + 's';
+      document.body.appendChild(c);
+      c.addEventListener('animationend', () => c.remove());
+    }, Math.random() * 600);
+  }
+  // Second wave
+  setTimeout(() => {
+    for (let i = 0; i < 80; i++) {
+      setTimeout(() => {
+        const c = document.createElement('div');
+        c.className = 'confetti-piece';
+        c.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        c.style.left = Math.random()*100 + 'vw';
+        c.style.width  = (5 + Math.random()*7)  + 'px';
+        c.style.height = (5 + Math.random()*9)  + 'px';
+        c.style.animationDuration = (2.5 + Math.random()*2) + 's';
+        document.body.appendChild(c);
+        c.addEventListener('animationend', () => c.remove());
+      }, Math.random()*400);
+    }
+  }, 1200);
+}
+</script>
+</body>
+</html>
